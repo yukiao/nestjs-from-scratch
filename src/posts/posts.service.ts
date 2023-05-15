@@ -5,6 +5,7 @@ import { UpdatePostDto } from '../posts/dtos/update-post.dto';
 import PostEntity from '../posts/post.entity';
 import { Post } from '../posts/post.interface';
 import { Equal, Repository } from 'typeorm';
+import { PostNotFoundException } from './exception/post-not-found.exception';
 
 @Injectable()
 export default class PostsService {
@@ -25,7 +26,7 @@ export default class PostsService {
     if (post) {
       return post;
     }
-    throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
+    throw new PostNotFoundException(id);
   }
 
   async replacePost(id: number, post: UpdatePostDto) {

@@ -12,7 +12,7 @@ import { AuthenticationService } from './authentication.service';
 import RegisterDto from './dto/register.dto';
 import { LocalAuthenticationGuard } from './local-authentication.guard';
 import RequestWithUser from './request-with-user.interface';
-import { Response} from 'express';
+import { Response } from 'express';
 import JWTAuthenticationGuard from './jwt-authentication.guard';
 
 @Controller('authentication')
@@ -28,9 +28,9 @@ export class AuthenticationController {
   @UseGuards(LocalAuthenticationGuard)
   @Post('log-in')
   async logIn(@Req() request: RequestWithUser, @Res() response: Response) {
-    const {user} = request;
+    const { user } = request;
     const cookie = this.authenticationService.getCookieWithJwtToken(user.id);
-    response.setHeader("Set-Cookie", cookie)
+    response.setHeader('Set-Cookie', cookie);
     user.password = undefined;
     return response.send(user);
   }
@@ -38,7 +38,10 @@ export class AuthenticationController {
   @UseGuards(JWTAuthenticationGuard)
   @Post('log-out')
   async logOut(@Req() request: RequestWithUser, @Res() response: Response) {
-    response.setHeader('Set-Cookie', this.authenticationService.getCookieForLogOut());
+    response.setHeader(
+      'Set-Cookie',
+      this.authenticationService.getCookieForLogOut(),
+    );
     return response.sendStatus(200);
   }
 

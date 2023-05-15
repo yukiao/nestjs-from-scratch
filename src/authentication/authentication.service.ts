@@ -12,12 +12,12 @@ export class AuthenticationService {
   constructor(
     private usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
-  public async register (registrationData: RegisterDto) {
+  public async register(registrationData: RegisterDto) {
     const hashedPassword = await bcrypt.hash(registrationData.password, 10);
-    console.log(this.usersService)
+    console.log(this.usersService);
     try {
       const createdUser = await this.usersService.create({
         ...registrationData,
@@ -32,7 +32,7 @@ export class AuthenticationService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      console.log(error)
+      console.log(error);
       throw new HttpException(
         'Something went wrong',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -71,13 +71,15 @@ export class AuthenticationService {
     }
   }
 
-  public getCookieWithJwtToken(userId: number){
+  public getCookieWithJwtToken(userId: number) {
     const payload: TokenPayload = { userId };
     const token = this.jwtService.sign(payload);
-    return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get('JWT_EXPIRATION_TIME')}`;
+    return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
+      'JWT_EXPIRATION_TIME',
+    )}`;
   }
 
-  public getCookieForLogOut(){
+  public getCookieForLogOut() {
     return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
   }
 }
