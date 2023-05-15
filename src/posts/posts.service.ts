@@ -6,44 +6,65 @@ import PostEntity from '../posts/post.entity';
 import { Post } from '../posts/post.interface';
 import { Equal, Repository } from 'typeorm';
 import { PostNotFoundException } from './exception/post-not-found.exception';
+import User from '../users/user.entity';
 
 @Injectable()
 export default class PostsService {
-  private lastPostId = 0;
-  private posts: Post[] = [];
-
   constructor(
     @InjectRepository(PostEntity)
     private readonly postRepository: Repository<PostEntity>,
   ) {}
 
   getAllPosts() {
-    return this.postRepository.find();
+    return this.postRepository.find({ relations: ["author"]});
   }
 
-  getPostById(id: number) {
-    const post = this.posts.find((post) => post.id === id);
-    if (post) {
+  async getPostById(id: number) {
+    const post = await this.postRepository.findOne({
+      where: {
+        id: Equal(id)
+      },
+      relations: ['author']
+    });
+
+    if(post){
       return post;
     }
     throw new PostNotFoundException(id);
   }
 
-  async replacePost(id: number, post: UpdatePostDto) {
+  // async replacePost(id: number, post: UpdatePostDto) {
+  //   await this.postRepository.update(id, post);
+  //   const updatedPost = await this.postRepository.findOne({
+  //     where: {
+  //       id: Equal(id),
+  //     },
+  //   });
+  //   if (updatedPost) {
+  //     return updatedPost;
+  //   }
+  //   throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
+  // }
+
+  async updatePost(id: number, post: UpdatePostDto){
     await this.postRepository.update(id, post);
     const updatedPost = await this.postRepository.findOne({
       where: {
         id: Equal(id),
       },
+      relations: ['author']
     });
-    if (updatedPost) {
+    if(updatedPost){
       return updatedPost;
     }
-    throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
+    throw new PostNotFoundException(id);
   }
 
-  async createPost(post: CreatePostDto) {
-    const newPost = await this.postRepository.create(post);
+  async createPost(post: CreatePostDto, user: User) {
+    const newPost = await this.postRepository.create({
+      ...post,
+      author: user
+    });
     await this.postRepository.save(newPost);
     return newPost;
   }
